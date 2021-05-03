@@ -11,7 +11,7 @@ using static System.Windows.Forms.Control;
 
 namespace MyGame
 {
-    class Player
+    class Player: Controller
     {
         public PointF Location = new PointF(0, 0);
 
@@ -20,37 +20,41 @@ namespace MyGame
 
         private bool _isActiv = false;
 
-        public Bitmap Sprite;
+        public Bitmap Sprite = Properties.Resources.Слой_1;
 
-        Label l = new Label {Size = new Size(50, 30), Text = "0"};
-        Form form;
-
-        public Player(Program form)
+        public Player(Form form) : base(form)
         {
-            this.form = form;
-            form.Controls.Add(l);
             Sprite = Properties.Resources.Слой_1;
-
-            Input.AddEvent(Keys.A, Left);
-            Input.AddEvent(Keys.D,  Right);
-        }
-
-        private void Left()
-        {
-            Location.X -= 10;
-            Thread.Sleep(1000);
-        }
-
-        private void Right()
-        {
-            Location.X += 10;
-            Thread.Sleep(100);
         }
 
         public void Start()
         {
             _isActiv = true;
             new Thread(new ThreadStart(() => { while (_isActiv) Update(); })).Start();
+        }
+
+        public override void Left()
+        {
+            Location.X -= 10;
+            Thread.Sleep(1);
+        }
+
+        public override void Right()
+        {
+            Location.X += 10;
+            Thread.Sleep(1);
+        }
+
+        public override void Down()
+        {
+            Location.Y += 10;
+            Thread.Sleep(1);
+        }
+
+        public override void Up()
+        {
+            Location.Y -= 10;
+            Thread.Sleep(1);
         }
 
         public void Update()

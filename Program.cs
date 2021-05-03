@@ -13,18 +13,12 @@ namespace MyGame
         {
             DoubleBuffered = true;
             this.Width = width; this.Height = heigth;
-            Controls.Add(Input.Keypad);
 
-            Input.Activ();
             player = new Player(this);
-
-
             Paint += Program_Paint;
 
-            var timer = new System.Windows.Forms.Timer();
-            timer.Tick += (s, e) => Invalidate();
-            timer.Interval = 40;
-            timer.Start();
+
+            new Thread(() => { while (true) Invalidate(); }).Start();
         }
 
 
@@ -37,18 +31,6 @@ namespace MyGame
         public static void Main()
         {
             Application.Run(new Program());
-        }
-
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            // 
-            // Program
-            // 
-            this.ClientSize = new System.Drawing.Size(507, 276);
-            this.Name = "Program";
-            this.ResumeLayout(false);
-
         }
     }
 }
