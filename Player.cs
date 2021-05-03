@@ -6,60 +6,63 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Input;
-using static System.Windows.Forms.Control;
 
 namespace MyGame
 {
-    class Player: Controller
+    class Player: IElement
     {
-        public PointF Location = new PointF(0, 0);
+        private PointF _location = new PointF (0,0);
+        public PointF Location { get =>_location;}
 
         public float WalkSpeed = 3;
         public float JumpForce = 10;
 
-        private bool _isActiv = false;
+        public bool isActiv { get; set; } = false;
 
-        public Bitmap Sprite = Properties.Resources.Слой_1;
+        public Bitmap Sprite { get; set; } = Properties.Resources.Слой_1;
 
-        public Player(Form form) : base(form)
+        public Player()
         {
             Sprite = Properties.Resources.Слой_1;
         }
 
         public void Start()
         {
-            _isActiv = true;
-            new Thread(new ThreadStart(() => { while (_isActiv) Update(); })).Start();
+            isActiv = true;
+            //new Thread(new ThreadStart(() => { while (isActiv) Update(); })).Start();
         }
 
-        public override void Left()
+        public void Left()
         {
-            Location.X -= 10;
+            _location.X -= 10;
             Thread.Sleep(1);
         }
 
-        public override void Right()
+        public void Right()
         {
-            Location.X += 10;
+            _location.X += 10;
             Thread.Sleep(1);
         }
 
-        public override void Down()
+        public void Down()
         {
-            Location.Y += 10;
+            _location.Y += 10;
             Thread.Sleep(1);
         }
 
-        public override void Up()
+        public void Up()
         {
-            Location.Y -= 10;
+            _location.Y -= 10;
             Thread.Sleep(1);
         }
 
         public void Update()
         {
 
+        }
+
+        public void Stop()
+        {
         }
     }
 }
