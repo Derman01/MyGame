@@ -7,62 +7,87 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace MyGame
 {
-    class Player: IElement
+    class Hero: Player
     {
-        private PointF _location = new PointF (0,0);
-        public PointF Location { get =>_location;}
+        private MoveState _moveState = MoveState.Right;
 
-        public float WalkSpeed = 3;
-        public float JumpForce = 10;
-
-        public bool isActiv { get; set; } = false;
-
-        public Bitmap Sprite { get; set; } = Properties.Resources.Слой_1;
-
-        public Player()
+        internal override void Started()
         {
-            Sprite = Properties.Resources.Слой_1;
-        }
+            Sprite = new Bitmap(Properties.Resources.Слой_1);
 
-        public void Start()
-        {
-            isActiv = true;
-            //new Thread(new ThreadStart(() => { while (isActiv) Update(); })).Start();
+            _animator.AddAnimation(new Animation(this, "Right", 20,
+                new Bitmap(Properties.Resources._1),
+                new Bitmap(Properties.Resources._2),
+                new Bitmap(Properties.Resources._3),
+                new Bitmap(Properties.Resources._4)));
+            _animator.AddAnimation(new Animation(this, "Left", 5,
+                new Bitmap(Properties.Resources._1),
+                new Bitmap(Properties.Resources._2),
+                new Bitmap(Properties.Resources._3),
+                new Bitmap(Properties.Resources._4)));
+            _animator.Play("Right");
+
+            Con.Consondeb();
         }
 
         public void Left()
         {
-            _location.X -= 10;
-            Thread.Sleep(1);
+            if (!(_moveState is MoveState.Left))
+            {
+                _animator.Play("Left");
+                _moveState = MoveState.Left;
+            }
+               
+            _location.X -= 100 * deltaTime;
         }
 
         public void Right()
         {
-            _location.X += 10;
-            Thread.Sleep(1);
-        }
+            if (!(_moveState is MoveState.Right))
+            {
+                _animator.Play("Right");
+                _moveState = MoveState.Right;
+            }
+            _location.X += 100 * deltaTime;
+        } 
 
         public void Down()
         {
-            _location.Y += 10;
-            Thread.Sleep(1);
+           _location.Y += 120 * deltaTime ;
         }
 
         public void Up()
         {
-            _location.Y -= 10;
-            Thread.Sleep(1);
+            _location.Y -= 150 * deltaTime;
         }
 
-        public void Update()
-        {
+        internal override void Updated(){}
 
+        internal override void Stoped(){}
+
+        enum MoveState
+        {
+            Right,
+            Left
         }
+    }
 
-        public void Stop()
+    public abstract class Player : AElement, IObject
+    {
+        public Bitmap Sprite { get; set; }
+
+        internal PointF _location = new PointF(0, 0);
+        public PointF Location { get => _location; set{ _location = value;   } }
+
+        internal Animator _animator { get; set; } = new Animator();
+
+        public override void Update()
         {
+            base.Update();
+            _animator.Update();
         }
     }
 }

@@ -24,5 +24,17 @@ namespace MyGame
         {
             Application.Run(new Program());
         }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // Program
+            // 
+            this.ClientSize = new System.Drawing.Size(278, 244);
+            this.Name = "Program";
+            this.ResumeLayout(false);
+        }
+
     }
 }

@@ -4,137 +4,91 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MyGame
 {
-    class Animator
+    class Animator: AElement
     {
         private string _currentNameAnimation;
+        private Dictionary<string, Animation> _animations = new Dictionary<string, Animation>();
 
-        private Dictionary<string, Animation> _animations;
-
-        public void Play(string animation)
+        public void Play(string animation = null)
         {
-            _animations[_currentNameAnimation]?.Start();
+            if (_currentNameAnimation == null)
+                _currentNameAnimation = animation;
+            else
+            {
+                _animations[_currentNameAnimation].Stop();
+            }
             _currentNameAnimation = animation;
             _animations[animation].Start();
+        }        
+
+        public void AddAnimation(Animation animation)
+            => _animations.Add(animation.name, animation);
+
+        internal override void Started()
+        {
+        }
+
+        internal override void Updated()
+        {
+            _animations[_currentNameAnimation].Update();
+        }
+
+        internal override void Stoped()
+        {
         }
     }
     
-    class Animation
+    class Animation: AElement
     {
-        private bool _isActiv = false;
-
-        private Time _time = new Time();
-
-        public int speedAnimation;
         private Player _player;
-
-        private int _currentIndexSprite = 0;
+        private float _currentIndexSprite = 0;
         private Bitmap[] _sprite;
+        private int _speedAnimation; // кадров в секунду
 
-        public Animation(Player player,int speedAnimation = 1000, params Bitmap[] sprites)
+        public string name;
+
+        public Animation(Player player, string name, int speedAnimation = 1, params Bitmap[] sprites)
         {
             _sprite = sprites;
-            this.speedAnimation = speedAnimation;
-            this._player = player;
+            _speedAnimation = speedAnimation;
+            _player = player;
+            this.name = name; 
         }
 
-        public void Start()
+        internal override void Updated()
         {
-            _time.Start();
-            _isActiv = true;
-            Parallel.Invoke(Update);
+            _currentIndexSprite = _currentIndexSprite + _speedAnimation * deltaTime;
+            _player.Sprite = _sprite[(int)_currentIndexSprite % _sprite.Length];
+        }
+    
+
+        internal override void Started()
+        {
         }
 
-        private void Update()
+        internal override void Stoped()
         {
-            while (_isActiv)
-            {
-                if (_time.deltaTime > speedAnimation)
-                {
-                    Next();
-                }
-            }
-        }
-
-        private void Next()
-        {
-            _currentIndexSprite = (_currentIndexSprite + 1) % _sprite.Length;
-            _player.Sprite = _sprite[_currentIndexSprite];
-        }
-
-        private void Stop()
-        {
-
         }
     }
 
     class Time
     {
-        public long deltaTime
+        public float deltaTime
         {
-            get
-            {
-                var res = watch.ElapsedMilliseconds;
-                watch.Stop();
-                watch.Start();
-                return res;
-            }
+            get => (float)watch.ElapsedMilliseconds / 1000;            
         }
 
         Stopwatch watch = new Stopwatch();
 
-        public Time()
-        {
-
-        }
+        public void Restart() => watch.Restart();
 
         public void Start()
         {
             watch.Start();
         }
-    }
-
-    public static class Input
-    {
-        public static void Activ()
-        {
-            Keypad.KeyUp += (s, key) =>
-            {
-                if (activKeys.ContainsKey(key.KeyCode))
-                    activKeys[key.KeyCode] = false;
-            };
-        }
-
-        public static void AddEvent(Keys key, Action metod)
-        {
-            if (!activKeys.ContainsKey(key))
-            {
-                activKeys.Add(key, false);
-                Keypad.KeyDown += (s, key) =>
-                {
-                    if (activKeys.ContainsKey(key.KeyCode) && !activKeys[key.KeyCode])
-                         MakeMetod(key.KeyCode, metod);
-                 };           
-            }                        
-        }
-
-        private static void MakeMetod(Keys key, Action metod)
-        {
-            new Thread(new ThreadStart(
-                   () => {
-                       activKeys[key] = true;
-                       while (activKeys[key])
-                           metod();
-                   }
-                   )).Start();
-        }
-
-        public static Control Keypad = new  Control();
-        
-        private static Dictionary<Keys, bool> activKeys = new Dictionary<Keys, bool>();
     }
 }

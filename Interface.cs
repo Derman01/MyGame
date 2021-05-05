@@ -9,17 +9,41 @@ using System.Windows.Forms;
 
 namespace MyGame
 {
-    public interface IItem
+    public abstract class AElement
     {
-        public bool isActiv { get; set; }
-        public void Update();
-        public void Start();
-        public void Stop();
+        public bool isActiv = false;
+        internal float deltaTime = 0;
+        internal Time _time = new Time();
+
+        internal abstract void Started();
+        public virtual void Start()
+        {
+            isActiv = true;
+            _time.Start();
+            Started();
+            //new Thread(() => { while (isActiv) Update(); }).Start();
+        }
+
+        internal abstract void Updated();
+        public virtual void Update()
+        {
+            deltaTime = _time.deltaTime;
+            _time.Restart();
+            Updated();
+        }
+
+
+        internal abstract void Stoped();
+        public virtual void Stop()
+        {
+            isActiv = false;
+            Stoped();
+        }
     }
 
-    public interface IElement: IItem
+    public interface IObject
     {
         public Bitmap Sprite { get; }
-        public PointF Location { get; }
+        public PointF Location { get; set; }
     }    
 }
