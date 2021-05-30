@@ -20,8 +20,11 @@ namespace MyGame
             return false;
         }
 
+        protected Control control;
+
         public IController(Control form)
         {
+            control = form;
             form.KeyDown += (s, e) =>
             {
                 if (!isPressKey.ContainsKey(e.KeyCode))
@@ -31,7 +34,6 @@ namespace MyGame
             form.KeyUp += (s, e) => isPressKey[e.KeyCode] = false;
 
             form.Paint += OnPaint;
-
             EventStart += Started;
             EventUpdate += Updated;
         }
@@ -42,7 +44,7 @@ namespace MyGame
             {
                 while (isActiv)
                 {
-                    Thread.Sleep(20);
+                    Thread.Sleep(5);
                     Update();
                 }
             }).Start();
