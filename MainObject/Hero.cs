@@ -1,36 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
 
 namespace MyGame
 {
-    class Hero: Player
+    class Hero : Player
     {
         private MoveState _moveState = MoveState.Right;
+        private float speed = 300;
 
-        internal override void Started()
+        public override Bitmap Sprite { get; set; } = new Bitmap(Properties.Resources.Слой_1);
+
+        public override PointF Location { get; set; } = new PointF(100, 0);
+        public override SizeF Size { get; set; } = new SizeF(50, 50);
+
+        public Hero()
         {
-            Sprite = new Bitmap(Properties.Resources.Слой_1);
+            _animator.AddAnimation( new Animation(this, "Right", 20,
+                new Bitmap(Properties.Resources._1),
+                new Bitmap(Properties.Resources._2),
+                new Bitmap(Properties.Resources._3),
+                new Bitmap(Properties.Resources._4)));
 
-            _animator.AddAnimation(new Animation(this, "Right", 20,
+            _animator.AddAnimation( new Animation(this, "Left", 5,
                 new Bitmap(Properties.Resources._1),
                 new Bitmap(Properties.Resources._2),
                 new Bitmap(Properties.Resources._3),
                 new Bitmap(Properties.Resources._4)));
-            _animator.AddAnimation(new Animation(this, "Left", 5,
-                new Bitmap(Properties.Resources._1),
-                new Bitmap(Properties.Resources._2),
-                new Bitmap(Properties.Resources._3),
-                new Bitmap(Properties.Resources._4)));
+
             _animator.Play("Right");
-
-            Con.Consondeb();
         }
 
         public void Left()
@@ -40,8 +39,8 @@ namespace MyGame
                 _animator.Play("Left");
                 _moveState = MoveState.Left;
             }
-               
-            _location.X -= 100 * deltaTime;
+
+            Location = new PointF(Location.X - speed * deltaTime, Location.Y);
         }
 
         public void Right()
@@ -51,43 +50,23 @@ namespace MyGame
                 _animator.Play("Right");
                 _moveState = MoveState.Right;
             }
-            _location.X += 100 * deltaTime;
-        } 
+            Location = new PointF(Location.X + speed * deltaTime, Location.Y);
+        }
 
         public void Down()
         {
-           _location.Y += 120 * deltaTime ;
+            Location = new PointF(Location.X, Location.Y + speed * deltaTime);
         }
 
         public void Up()
         {
-            _location.Y -= 150 * deltaTime;
+            Location = new PointF(Location.X, Location.Y - speed * deltaTime);
         }
-
-        internal override void Updated(){}
-
-        internal override void Stoped(){}
 
         enum MoveState
         {
             Right,
             Left
-        }
-    }
-
-    public abstract class Player : AElement, IObject
-    {
-        public Bitmap Sprite { get; set; }
-
-        internal PointF _location = new PointF(0, 0);
-        public PointF Location { get => _location; set{ _location = value;   } }
-
-        internal Animator _animator { get; set; } = new Animator();
-
-        public override void Update()
-        {
-            base.Update();
-            _animator.Update();
         }
     }
 }

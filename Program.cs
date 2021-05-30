@@ -12,10 +12,11 @@ namespace MyGame
         public Program(int width = 1000, int heigth = 500)
         {
             DoubleBuffered = true;
-            this.Width = width; this.Height = heigth;
+            Width = width; Height = heigth;
             new Thread(() => { while ( isActiv) Invalidate(); }).Start();
             var controler = new Controller(this);
             controler.Start();
+            FormClosing += (s, e) => controler.Stop();
             FormClosed += (s, e) => isActiv = false;
         }
 
@@ -24,17 +25,5 @@ namespace MyGame
         {
             Application.Run(new Program());
         }
-
-        private void InitializeComponent()
-        {
-            this.SuspendLayout();
-            // 
-            // Program
-            // 
-            this.ClientSize = new System.Drawing.Size(278, 244);
-            this.Name = "Program";
-            this.ResumeLayout(false);
-        }
-
     }
 }
