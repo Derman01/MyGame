@@ -6,15 +6,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static MyGame.ICollider;
 
 namespace MyGame
 {
-    public abstract class Player : ActivElement, IOject
+    public abstract class Player : ActivElement, IObject
     {
+        public event Action EventDeleted;
         public Animator _animator { get; set; } = new Animator();
 
         public abstract Bitmap Sprite { get; set; }
+        public abstract SizeF Size { get; set; }
 
         public RectangleF BoxElement => new RectangleF(Location, Size);
 
@@ -24,26 +25,36 @@ namespace MyGame
             get => _location;
             set
             {
-                if (this is ICollider box && Collider.OnTriger(box))
-                    if (_moveState.Horizontal == MoveStateX.Rigth && !box.CanMove[Sect.Rigth]
-                        || _moveState.Vertical == MoveStateY.Bottom && !box.CanMove[Sect.Bottom]
-                        || _moveState.Horizontal == MoveStateX.Left && !box.CanMove[Sect.Left]
-                        || _moveState.Vertical == MoveStateY.Top && !box.CanMove[Sect.Top])
-                        return;
                 _location = value;
             }
         }
 
+        bool IObject.isActiv { get; set; } = true;
+
         public void LocationSet(float x, float y)
+            =>_location = new PointF(x, y);
+
+        public void Delete()
         {
-            _location = new PointF(x , y);
+            IController.DeleteElement(this);
+            isActiv = false;
+            Collider.Delete(this);
+            Stop();
+            EventDeleted?.Invoke();
+            Sprite.Dispose();
         }
 
-        public abstract SizeF Size { get; set; }
 
         public Player()
         {
-            EventUpdate += () => _animator.Update();
+            Collider.Add(this);
+
+            EventStart += () => { IController.AddElement(this); };
+            EventUpdate += () =>
+            {
+                if (_animator.isActiv)
+                    _animator.Update();
+            };
         }
 
         protected (MoveStateX Horizontal, MoveStateY Vertical) _moveState = (MoveStateX.None, MoveStateY.None);

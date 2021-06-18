@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -8,11 +9,22 @@ namespace MyGame
 {
     public abstract class IController : ActivElement
     {
-        public List<ActivElement> Elements = new List<ActivElement>();
+        public static void AddElement(ActivElement a)
+            => queueActivElement.Enqueue(a);
 
-        private Dictionary<Keys, bool> isPressKey = new Dictionary<Keys, bool>();
+        protected Form control;
+        private List<ActivElement> Elements = new List<ActivElement>();
+        private static Dictionary<Keys, bool> isPressKey;
+        private static Queue<ActivElement> queueActivElement ;
+        private static Queue<ActivElement> queueDeleteObject ; 
 
-        public bool GetKey(Keys key)
+        public static void DeleteElement(IObject a)
+        {
+            if (a is ActivElement activ)
+                queueDeleteObject.Enqueue(activ);
+        }
+
+        public static bool GetKey(Keys key)
         {
             if (isPressKey.ContainsKey(key))
                 return isPressKey[key];
@@ -20,10 +32,13 @@ namespace MyGame
             return false;
         }
 
-        protected Control control;
-
-        public IController(Control form)
+        public IController(Form form)
         {
+            queueActivElement = new Queue<ActivElement>();
+            queueDeleteObject = new Queue<ActivElement>();
+            isPressKey = new Dictionary<Keys, bool>();
+            Collider.Update();
+
             control = form;
             form.KeyDown += (s, e) =>
             {
@@ -36,7 +51,7 @@ namespace MyGame
             form.Paint += OnPaint;
             EventStart += Started;
             EventUpdate += Updated;
-        }
+        }        
 
         private void Started()
         {
@@ -51,18 +66,33 @@ namespace MyGame
         }
 
         private void Updated()
-        {
-            foreach (var e in Elements)
-                if (e.isActiv)
-                    e.Update();
+        { 
+            lock (Elements)
+            {
+                foreach (var e in Elements)
+                    if (e.isActiv)
+                        e.Update();
+            }
+            control.Invalidate();
         }
 
         private void OnPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.Clear(Color.Red);
-            foreach (var el in Elements)
-                if (el is IOject ob)
-                    e.Graphics.DrawImage(ob.Sprite, ob.BoxElement);
+            e.Graphics.Clear(Color.Black);
+            //e.Graphics.DrawImage(Properties.Resources.fon, 0, 0);
+            lock (Elements)
+            {
+                while (queueActivElement.Count != 0)
+                    Elements.Add(queueActivElement.Dequeue());
+                while (queueDeleteObject.Count != 0)
+                    Elements.Remove(queueDeleteObject.Dequeue());
+
+                foreach (var el in Elements)
+                    if (el is IObject ob && !queueDeleteObject.Contains(el))
+                    {
+                        e.Graphics.DrawImage(ob.Sprite, ob.BoxElement);
+                    }
+            }
         }
     }
 }

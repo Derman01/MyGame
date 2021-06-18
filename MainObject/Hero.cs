@@ -1,50 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Media;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace MyGame
 {
-    class Hero : Player, ICollider
+    public class Hero : Player
     {
-        private float speed = 100;
-        public Dictionary<ICollider.Sect, bool> CanMove { get; set; }
-            = new Dictionary<ICollider.Sect, bool>
-            {
-                { ICollider.Sect.Bottom, true },
-                { ICollider.Sect.Left, true },
-                { ICollider.Sect.Rigth, true },
-                { ICollider.Sect.Top, true}
-            };
+        private float speed = 400;
 
-        public override Bitmap Sprite { get; set; } = new Bitmap(Properties.Resources.Слой_1);
-
-        public override SizeF Size { get; set; } = new SizeF(50, 50);
+        public override Bitmap Sprite { get; set; } = new Bitmap(Properties.Resources.hero1);
+        public override SizeF Size { get; set; } = new SizeF(40, 40);
+        private double timeNow = 0;
+        private double timeSpanBullet = 300;
+        private Animator animator = new Animator();
 
         public Hero()
         {
-            Collider.Add(this);
+            animator.AddAnimation(new Animation(this, "start", 10,
+                new Bitmap(Properties.Resources.hero2),
+                new Bitmap(Properties.Resources.hero3),
+                new Bitmap(Properties.Resources.hero4),
+                new Bitmap(Properties.Resources.hero1)));
             _location = new PointF(100, 0);
-            _animator.AddAnimation( new Animation(this, "Right", 20,
-                new Bitmap(Properties.Resources._1),
-                new Bitmap(Properties.Resources._2),
-                new Bitmap(Properties.Resources._3),
-                new Bitmap(Properties.Resources._4)));
+            EventStart += () => animator.Play("start");
+            EventUpdate += () => animator.Update();
 
-            _animator.AddAnimation( new Animation(this, "Left", 5,
-                new Bitmap(Properties.Resources._1),
-                new Bitmap(Properties.Resources._2),
-                new Bitmap(Properties.Resources._3),
-                new Bitmap(Properties.Resources._4)));
+            EventUpdate += () => {
 
-            _animator.Play("Right");
+                Bonus bonus;
+                if (Collider.OnTrigger(this, out bonus)){
+                    bonus.Delete();
+                    timeSpanBullet = 100;
+                    new Thread(() => {
+                        Thread.Sleep(3000);
+                        timeSpanBullet = 300;
+                    }).Start();
+                }
+                var e = new Enemy();
+                if (Collider.OnTrigger(this, out e))
+                {
+                    Delete();
+                }
+                BulletEnemy bullet;
+                if (Collider.OnTrigger(this, out bullet))
+                {
+                    bullet.Delete();
+                    Delete();
+                    return;
+                }
+                if (Location.Y > 1000)
+                    Delete();
+
+            };
+        }
+
+        public void CreateBullet()
+        {
+            timeNow += deltaTime * 1000;
+
+            if (timeNow >= timeSpanBullet)
+            {
+                new Bullet(this).Start();
+                timeNow -= timeSpanBullet;
+            }
         }
 
         public void Left()
         {
             if (!(_moveState.Horizontal is MoveStateX.Left))
             {
-                _animator.Play("Left");
+                //_animator.Play("Left");
                 _moveState.Horizontal = MoveStateX.Left;
             }
 
@@ -55,7 +84,7 @@ namespace MyGame
         {
             if (!(_moveState.Horizontal is MoveStateX.Rigth))
             {
-                _animator.Play("Right");
+                //_animator.Play("Right");
                 _moveState.Horizontal = MoveStateX.Rigth;
             }
             Location = new PointF(Location.X + speed * deltaTime, Location.Y);
@@ -79,25 +108,4 @@ namespace MyGame
             Location = new PointF(Location.X, Location.Y - speed * deltaTime);
         }
     }
-
-    class Hero2 : Player, ICollider
-    {
-        public override Bitmap Sprite { get; set; } = new Bitmap(Properties.Resources._1);
-        public override SizeF Size { get; set; } = new SizeF(50, 200);
-        public Dictionary<ICollider.Sect, bool> CanMove { get; set; }
-            = new Dictionary<ICollider.Sect, bool> 
-            {
-                { ICollider.Sect.Bottom, true },
-                { ICollider.Sect.Left, true },
-                { ICollider.Sect.Rigth, true },
-                { ICollider.Sect.Top, true}
-            };
-
-        public Hero2()
-        {
-            _location = new PointF(200, 100);
-            Collider.Add(this);
-        }
-    }
-
 }

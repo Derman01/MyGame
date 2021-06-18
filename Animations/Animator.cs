@@ -11,10 +11,14 @@ namespace MyGame
     public class Animator: ActivElement
     {
         private string _currentNameAnimation;
+
         private Dictionary<string, Animation> _animations = new Dictionary<string, Animation>();
 
         public void Play(string animation = null)
         {
+            if (isActiv == false)
+                isActiv = true;
+
             if (_currentNameAnimation == null)
                 _currentNameAnimation = animation;
             else

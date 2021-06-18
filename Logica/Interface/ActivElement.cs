@@ -12,8 +12,8 @@ namespace MyGame
     public abstract class ActivElement
     {
         public bool isActiv = false;
-        internal float deltaTime = 0;
-        internal Time _time = new Time();
+        public  float deltaTime = 0;
+        private readonly Time _time = new Time();
 
         internal event Action EventStart;
         internal event Action EventUpdate;

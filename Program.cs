@@ -9,21 +9,33 @@ namespace MyGame
     {
         public bool isActiv = true;
 
-        public Program(int width = 1000, int heigth = 500)
+        private Controller controller;
+
+        public Program()
         {
+
+            FormBorderStyle = FormBorderStyle.None;
+
             DoubleBuffered = true;
-            Width = width; Height = heigth;
-            new Thread(() => { while ( isActiv) Invalidate(); }).Start();
-            var controler = new Controller(this);
-            controler.Start();
-            FormClosing += (s, e) => controler.Stop();
+            this.WindowState = FormWindowState.Maximized;
+            controller = new Controller(this);
+            controller.Start();
+            controller.EventStop += () => 
+            {
+                isActiv = false; 
+            };
+            Paint += (s, e) => {
+                if (!isActiv)
+                    Close();
+            };
+            FormClosing += (s, e) => controller.Stop();
             FormClosed += (s, e) => isActiv = false;
         }
 
 
         public static void Main()
         {
-            Application.Run(new Program());
+            Application.Run(new OpenForm());
         }
     }
 }
